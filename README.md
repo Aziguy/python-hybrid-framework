@@ -1,16 +1,16 @@
 # python-hybrid-framework
 
-# install dependencies
+### install dependencies
 
 > pip install -r requirements-dev.txt
 
-# enable black as a pre-commit hook which will prevent committing not formated source
+### enable black as a pre-commit hook which will prevent committing not formated source
 > pre-commit install
 
-# run black as it will be before each commit
+### run black as it will be before each commit
 > pre-commit run black
 
-# Create virtual env & install requirements
+### Create virtual env & install requirements
 
 ```sh
 virtualenv .venv -p python3
