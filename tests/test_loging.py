@@ -1,6 +1,6 @@
 import pytest
 from selenium.webdriver.common.by import By
-from utils.utils import generate_email_time_stamp
+from utilities.utils import generate_email_time_stamp
 
 
 @pytest.mark.usefixtures('setup_teardown')
