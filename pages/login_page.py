@@ -1,5 +1,7 @@
 from selenium.webdriver.common.by import By
 
+from pages.account_page import AccountPage
+
 
 class LoginPage:
 
@@ -23,6 +25,7 @@ class LoginPage:
 
     def click_on_login_button(self):
         self.driver.find_element(By.XPATH, self.login_button_xpath).click()
+        return AccountPage(self.driver)
 
     def login_to_application(self, email_address_text, password_text):
         self.enter_email_address(email_address_text)

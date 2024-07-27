@@ -1,5 +1,7 @@
 from selenium.webdriver.common.by import By
 
+from pages.account_success_page import AccountSuccessPage
+
 
 class RegisterPage:
 
@@ -57,33 +59,32 @@ class RegisterPage:
         self.driver.find_element(By.NAME, self.agree_field_name).click()
 
     def click_on_continue_button(self):
-        return self.driver.find_element(By.XPATH, self.continue_button_xpath).click()
-        # return AccountSuccessPage(self.driver)
+        self.driver.find_element(By.XPATH, self.continue_button_xpath).click()
+        return AccountSuccessPage(self.driver)
 
     def select_yes_radio_button(self):
         self.driver.find_element(By.XPATH, self.yes_radio_button_xpath).click()
 
-    def register_an_account(
-        self,
-        first_name_text,
-        last_name_text,
-        email_text,
-        telephone_text,
-        password_text,
-        password_confirm_text,
-        yes_or_no,
-        privacy_policy,
-    ):
-        self.enter_first_name(first_name_text)
-        self.enter_last_name(last_name_text)
-        self.enter_email(email_text)
-        self.enter_telephone(telephone_text)
-        self.enter_password(password_text)
-        self.enter_password_confirm(password_confirm_text)
-        if yes_or_no.__eq__("yes"):
+    def register_an_account(self, **user_data):
+        field_methods = {
+            'first_name': self.enter_first_name,
+            'last_name': self.enter_last_name,
+            'email': self.enter_email,
+            'telephone': self.enter_telephone,
+            'password': self.enter_password,
+            'password_confirm': self.enter_password_confirm,
+        }
+
+        for field, method in field_methods.items():
+            if field in user_data:
+                method(user_data[field])
+
+        if user_data.get('yes_or_no') == 'yes':
             self.select_yes_radio_button()
-        if privacy_policy.__eq__("select"):
+
+        if user_data.get('privacy_policy') == 'select':
             self.select_agree_checkbox_field()
+
         return self.click_on_continue_button()
 
     def retrieve_duplicate_email_warning(self):
@@ -107,30 +108,19 @@ class RegisterPage:
     def retrieve_password_warning(self):
         return self.driver.find_element(By.XPATH, self.password_warning_xpath).text
 
-    def verify_all_warnings(
-        self,
-        expected_privacy_policy_warning,
-        expected_first_name_warning_message,
-        expected_last_name_warning_message,
-        expected_email_warning_message,
-        expected_telephone_warning_message,
-        expected_password_warning_message,
-    ):
-        actual_privacy_policy_warning = self.retrieve_privacy_policy_warning()
-        actual_first_name_warning_message = self.retrieve_first_name_warning()
-        actual_last_name_warning_message = self.retrieve_last_name_warning()
-        actual_email_warning_message = self.retrieve_email_warning()
-        actual_telephone_warning_message = self.retrieve_telephone_warning()
-        actual_password_warning_message = self.retrieve_password_warning()
+    def verify_all_warnings(self, **expected_warnings):
+        warning_types = ['privacy_policy', 'first_name', 'last_name', 'email', 'telephone', 'password']
 
-        status = False
+        actual_warnings = {
+            warning_type: getattr(self, f'retrieve_{warning_type}_warning')() for warning_type in warning_types
+        }
 
-        if expected_privacy_policy_warning.__contains__(actual_privacy_policy_warning):
-            if expected_first_name_warning_message.__eq__(actual_first_name_warning_message):
-                if expected_last_name_warning_message.__eq__(actual_last_name_warning_message):
-                    if expected_email_warning_message.__eq__(actual_email_warning_message):
-                        if expected_telephone_warning_message.__eq__(actual_telephone_warning_message):
-                            if expected_password_warning_message.__eq__(actual_password_warning_message):
-                                status = True
+        for warning_type, expected_warning in expected_warnings.items():
+            actual_warning = actual_warnings.get(warning_type)
+            if warning_type == 'privacy_policy':
+                if expected_warning not in actual_warning:
+                    return False
+            elif expected_warning != actual_warning:
+                return False
 
-        return status
+        return True
