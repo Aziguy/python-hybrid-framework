@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from pages.account_success_page import AccountSuccessPage
 from pages.home_page import HomePage
 from pages.register_page import RegisterPage
+from utilities import excel_utils
 from utilities.utils import generate_email_time_stamp
 
 
@@ -14,8 +15,8 @@ class TestRegister:
         home_page = HomePage(self.driver)
         register_page = home_page.navigate_to_register_page()
         account_success_page = register_page.register_an_account(
-            first_name='Aziguy',
-            last_name='HERNANDEZ',
+            first_name=excel_utils.get_cell_data("ExcelFiles/datas.xlsx", "RegisterTest", 2, 1),
+            last_name=excel_utils.get_cell_data("ExcelFiles/datas.xlsx", "RegisterTest", 2, 2),
             email=generate_email_time_stamp(),
             telephone='0123456789',
             password='secure_password',

@@ -1,11 +1,9 @@
 import pytest
-from selenium.webdriver.common.by import By
 from pages.home_page import HomePage
-from pages.search_page import SearchPage
+from tests.base_test import BaseTest
 
 
-@pytest.mark.usefixtures('setup_teardown')
-class TestSearch:
+class TestSearch(BaseTest):
 
     def test_search_for_valid_product(self):
         home_page = HomePage(self.driver)
