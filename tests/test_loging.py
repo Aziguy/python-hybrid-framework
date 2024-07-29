@@ -1,48 +1,37 @@
 import pytest
-from selenium.webdriver.common.by import By
-from utils.utils import generate_email_time_stamp
+from pages.home_page import HomePage
+from tests.base_test import BaseTest
+from utilities import excel_utils
 
 
-@pytest.mark.usefixtures('setup_teardown')
-class TestLoging:
+class TestLoging(BaseTest):
 
-    def test_login_with_valid_credentials(self):
-        self.driver.find_element(By.XPATH, "//span[text()='My Account']").click()
-        self.driver.find_element(By.LINK_TEXT, "Login").click()
-        self.driver.find_element(By.ID, "input-email").send_keys("amotooricap1@gmail.com")
-        self.driver.find_element(By.ID, "input-password").send_keys("12345")
-        self.driver.find_element(By.XPATH, "//input[@value='Login']").click()
-        assert self.driver.find_element(By.LINK_TEXT, "Edit your account information").is_displayed()
+    @pytest.mark.parametrize(
+        "email_address,password", excel_utils.get_data_from_excel("ExcelFiles/datas.xlsx", "LoginTest")
+    )
+    def test_login_with_valid_credentials(self, email_address, password):
+        home_page = HomePage(self.driver)
+        login_page = home_page.navigate_to_login_page()
+        account_page = login_page.login_to_application(email_address, password)
+        assert account_page.display_status_of_edit_your_account_information_option()
 
-    def test_login_with_invalid_email_and_valid_pwd(self):
-        self.driver.find_element(By.XPATH, "//span[text()='My Account']").click()
-        self.driver.find_element(By.LINK_TEXT, "Login").click()
-        self.driver.find_element(By.ID, "input-email").send_keys(generate_email_time_stamp())
-        self.driver.find_element(By.ID, "input-password").send_keys("12345")
-        self.driver.find_element(By.XPATH, "//input[@value='Login']").click()
+    def test_login_with_invalid_email_and_valid_password(self):
+        home_page = HomePage(self.driver)
+        login_page = home_page.navigate_to_login_page()
+        login_page.login_to_application(self.generate_email_with_time_stamp(), "12345")
         expected_warning_message = "Warning: No match for E-Mail Address and/or Password."
-        assert self.driver.find_element(By.XPATH, "//div[@id='account-login']/div[1]").text.__contains__(
-            expected_warning_message
-        )
+        assert login_page.retrieve_warning_message().__contains__(expected_warning_message)
 
-    def test_login_with_valid_email_and_invalid_pwd(self):
-        self.driver.find_element(By.XPATH, "//span[text()='My Account']").click()
-        self.driver.find_element(By.LINK_TEXT, "Login").click()
-        self.driver.find_element(By.ID, "input-email").send_keys("amotooricap1@gmail.com")
-        self.driver.find_element(By.ID, "input-password").send_keys("123450")
-        self.driver.find_element(By.XPATH, "//input[@value='Login']").click()
+    def test_login_with_valid_email_and_invalid_password(self):
+        home_page = HomePage(self.driver)
+        login_page = home_page.navigate_to_login_page()
+        login_page.login_to_application("amotooricap1@gmail.com", "1234567890")
         expected_warning_message = "Warning: No match for E-Mail Address and/or Password."
-        assert self.driver.find_element(By.XPATH, "//div[@id='account-login']/div[1]").text.__contains__(
-            expected_warning_message
-        )
+        assert login_page.retrieve_warning_message().__contains__(expected_warning_message)
 
-    def test_login_without_providing_credentials(self):
-        self.driver.find_element(By.XPATH, "//span[text()='My Account']").click()
-        self.driver.find_element(By.LINK_TEXT, "Login").click()
-        self.driver.find_element(By.ID, "input-email").send_keys("")
-        self.driver.find_element(By.ID, "input-password").send_keys("")
-        self.driver.find_element(By.XPATH, "//input[@value='Login']").click()
+    def test_login_without_entering_credentials(self):
+        home_page = HomePage(self.driver)
+        login_page = home_page.navigate_to_login_page()
+        login_page.login_to_application("", "")
         expected_warning_message = "Warning: No match for E-Mail Address and/or Password."
-        assert self.driver.find_element(By.XPATH, "//div[@id='account-login']/div[1]").text.__contains__(
-            expected_warning_message
-        )
+        assert login_page.retrieve_warning_message().__contains__(expected_warning_message)
